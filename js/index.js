@@ -5,6 +5,7 @@ const simulateBtn = document.querySelector('.simulate-btn');
 const simulatedLifts = document.querySelector('.simulated-lifts');
 
 let isInputValid = false;
+let liftsData = [];
 
 function cleanupInputs() {
     floors.value = "";
@@ -50,6 +51,8 @@ function generateFloorsAndLifts (floorCount, liftCount) {
     container.classList.add("container");
 
     generateLiftsData(liftCount);
+
+    console.log("Data: ", liftsData);
 
     for(let i = 0; i <= floorCount; i++) {
         const floorContainer = document.createElement("div");
@@ -106,7 +109,13 @@ function generateFloorsAndLifts (floorCount, liftCount) {
     }
 }
 
-function generateLiftsData(lifts) {
-    const liftsData = [];
-
+function generateLiftsData(liftCount) {
+    for(let i=0; i<liftCount; i++){
+        let liftData = {
+            liftId: i+1,
+            state: "idle", //DOCS: can have idle || up || down
+            currentFloor: 1
+        }
+        liftsData.push(liftData);
+    }
 }
