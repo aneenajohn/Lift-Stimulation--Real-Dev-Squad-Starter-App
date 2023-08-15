@@ -84,8 +84,7 @@ body {
     display: block;
 }
 
-.submit-btn {
-    grid-column-start: 1.5;
+.simulate-btn {
     padding: 1rem;
     border-radius: 8px;
     -webkit-border-radius: 8px;
