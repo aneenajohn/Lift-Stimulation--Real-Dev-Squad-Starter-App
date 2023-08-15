@@ -49,11 +49,25 @@ body {
     gap: 1rem;
 }
 
-
-
 .input-form {
+    height: 100%; 
+}
+
+.grid-container {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    /* grid-row-gap: 1rem; */
+    grid-gap: 1rem;
+    background-color: var(--primary-color);
+    /* background-color: var(--secondary-bg-color); */
+    padding: 1rem;
     color: var(--secondary-text);
-    background-color: var(--secondary-bg-color) ;
+}
+
+.grid-item {
+    justify-self: end;
+    align-self: center;
 }
 
 .inputs {
@@ -68,4 +82,16 @@ body {
 
 .input-label {
     display: block;
+}
+
+.submit-btn {
+    grid-column-start: 1.5;
+    padding: 1rem;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    -ms-border-radius: 8px;
+    -o-border-radius: 8px;
+    background-color: var(--primary-color);
+    font-weight: 600;
 }
