@@ -95,6 +95,15 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             const lift = document.createElement("div");
             lift.classList.add("lift");
 
+            const leftDoor = document.createElement("div");
+            leftDoor.classList.add("left-door");
+
+            const rightDoor = document.createElement("div");
+            rightDoor.classList.add("right-door");
+
+            lift.appendChild(leftDoor);
+            lift.appendChild(rightDoor);
+
             const floorLabel = document.createElement("p");
             floorLabel.innerText = `Floor ${floorNumber}`;
             floorLabel.classList.add("floor-label");
@@ -130,10 +139,18 @@ function generateLiftsData(liftCount) {
 
 function moveLiftToFloor(targetFloor) {
     const lift = document.querySelector(".lift");
+    const leftDoor = document.querySelector(".left-door");
+    const rightDoor = document.querySelector(".right-door");
     const liftHeight = 3.5; // Height of each floor container
+    const currentFloor = liftsData[0].currentFloor;
+
+    if(targetFloor > currentFloor) {
+        liftsData[0].state = "up"
+    }else {
+        liftsData[0].state = "down"
+    }
 
     if (isInputValid && liftsData.length > 0) {
-        const currentFloor = liftsData[0].currentFloor;
         const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
         const animationDuration = 2; // 2 seconds per floor
         // console.log(`Lift moving from floor ${currentFloor} to floor ${targetFloor}`);
@@ -142,15 +159,62 @@ function moveLiftToFloor(targetFloor) {
         const totalAnimationDuration = floorDistance * animationDuration;
 
         let translateYDistance = -((targetFloor - 1) * liftHeight);
-        // console.log({currentFloor, targetFloor});
 
         lift.style.transition = `transform ${totalAnimationDuration}s ease-in-out`;
         lift.style.transform = `translateY(${translateYDistance}rem)`;
         liftsData[0].currentFloor = targetFloor;
+        liftsData[0].state = "idle"
+
 
         // FIX: Reset the transition once lift reaches destination
         setTimeout(() => {
             lift.style.transition = "";
+            lift.classList.add("opened-door")
+            leftDoor.classList.add("closed-door");
+            rightDoor.classList.add("closed-door")
+            openLeftDoor();
+            openRightDoor();
+
+            //FIX: Add transitionend event listener to the doors
+            leftDoor.addEventListener("transitionend", () => {
+                lift.classList.remove("opened-door");
+                leftDoor.classList.remove("closed-door");
+            });
+
+            rightDoor.addEventListener("transitionend", () => {
+                rightDoor.classList.remove("closed-door");
+            });
         }, totalAnimationDuration * 1000);
+
+        function openLeftDoor() {
+            leftDoor.style.transform = `translateX(-1.25rem)`;
+            leftDoor.style.transition = `transform 2.5s ease-in-out`;
+            closeLeftDoor();
+        }
+
+        function openRightDoor() {
+            rightDoor.style.transform = `translateX(1.25rem)`;
+            rightDoor.style.transition = `transform 2.5s ease-in-out`;
+            closeRightDoor();
+        }
+
+        function closeLeftDoor() {
+            setTimeout(() => {
+                leftDoor.style.transform = `translateX(0rem)`;
+                leftDoor.style.transition = `transform 2.5s ease-in-out`;
+            },2500)
+        }
+
+        function closeRightDoor() {
+            setTimeout(() => {
+                rightDoor.style.transform = `translateX(0rem)`;
+                rightDoor.style.transition = `transform 2.5s ease-in-out`;
+            },2500)
+        }
+
     }
 }
+
+
+
+
