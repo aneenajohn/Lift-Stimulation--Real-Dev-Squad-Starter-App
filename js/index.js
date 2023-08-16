@@ -138,17 +138,19 @@ function moveLiftToFloor(targetFloor) {
         const animationDuration = 2; // 2 seconds per floor
         // console.log(`Lift moving from floor ${currentFloor} to floor ${targetFloor}`);
 
+        const floorDistance = Math.abs(currentFloor - targetFloor);
+        const totalAnimationDuration = floorDistance * animationDuration;
+
         let translateYDistance = -((targetFloor - 1) * liftHeight);
         // console.log({currentFloor, targetFloor});
 
-        lift.style.transition = `transform ${animationDuration}s ease-in-out`;
+        lift.style.transition = `transform ${totalAnimationDuration}s ease-in-out`;
         lift.style.transform = `translateY(${translateYDistance}rem)`;
-
-        // console.log({translateYDistance})
         liftsData[0].currentFloor = targetFloor;
 
+        // FIX: Reset the transition once lift reaches destination
         setTimeout(() => {
             lift.style.transition = "";
-        }, animationDuration * 1000); // Reset transition after it completes
+        }, totalAnimationDuration * 1000);
     }
 }
