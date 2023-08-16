@@ -114,6 +114,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 100%;
 }
 
 .line-split {
@@ -140,7 +141,7 @@ body {
 }
 
 .opened-door {
-    background-color: var(--secondary-bg-color);
+    background-color: var(--error);
 }
 
 .closed-door {

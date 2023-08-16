@@ -24,6 +24,8 @@ simulateBtn.addEventListener("click", (e) => {
     }else if(Number(floors.value) === 1){
         cleanupInputs();
         alert("There should be at least 2 floors");
+    }else if(Number(floors.value) > 20){
+        alert("Max allowed floors: 20");
     }else if(Number(lifts.value) > 5) {
         alert("Max allowed lifts: 5")
     }else if(Number(lifts.value) > Number(floors.value)) {
