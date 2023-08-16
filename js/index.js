@@ -21,7 +21,7 @@ simulateBtn.addEventListener("click", (e) => {
     }else if(!Number(lifts.value) || Number(lifts.value) < 1) {
         cleanupInputs();
         alert("Enter valid number of lifts")
-    }else if(Number(lifts.value) === 1){
+    }else if(Number(floors.value) === 1){
         cleanupInputs();
         alert("There should be at least 2 floors");
     }else if(Number(lifts.value) > 5) {
@@ -37,8 +37,9 @@ simulateBtn.addEventListener("click", (e) => {
         // DOCS: Back btn to toggle page
         const backBtn = document.querySelector(".back-btn");
         backBtn.addEventListener("click", (e) => {
-            simulatedLifts.style.display = "none"
-            userInputPage.style.display = "block"
+            simulatedLifts.style.display = "none";
+            userInputPage.style.display = "block";
+            liftsData = [];
             cleanupInputs();
         })
 
@@ -67,6 +68,8 @@ function generateFloorsAndLifts (floorCount, liftCount) {
 
         floorContainer.appendChild(lineSplit);
 
+        const floorNumber = floorCount - i;
+
         if(i < floorCount) {
             const floorContents = document.createElement("div");
             floorContents.classList.add("floor-contents");
@@ -77,17 +80,23 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             btnUp.innerText = "▲"
             // "⬆️"
             btnUp.classList.add("lift-btn")
+            btnUp.addEventListener("click", () => {
+                moveLiftToFloor(floorNumber);
+            });
 
             const btnDown = document.createElement("button");
             btnDown.innerText = "▼";
             // ⬇️
-            btnDown.classList.add("lift-btn")
+            btnDown.classList.add("lift-btn");
+            btnDown.addEventListener("click", () => {
+                moveLiftToFloor(floorNumber);
+            });
 
             const lift = document.createElement("div");
             lift.classList.add("lift");
-            
+
             const floorLabel = document.createElement("p");
-            floorLabel.innerText = `Floor ${floorCount - i}`;
+            floorLabel.innerText = `Floor ${floorNumber}`;
             floorLabel.classList.add("floor-label");
 
             btnContainer.appendChild(btnUp);
@@ -99,7 +108,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             if(i === floorCount -1) {
                 floorContents.appendChild(lift);
             }
-            
             floorContents.appendChild(floorLabel);
 
             floorContainer.appendChild(floorContents);
@@ -117,5 +125,30 @@ function generateLiftsData(liftCount) {
             currentFloor: 1
         }
         liftsData.push(liftData);
+    }
+}
+
+function moveLiftToFloor(targetFloor) {
+    const lift = document.querySelector(".lift");
+    const liftHeight = 3.5; // Height of each floor container
+
+    if (isInputValid && liftsData.length > 0) {
+        const currentFloor = liftsData[0].currentFloor;
+        const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
+        const animationDuration = 2; // 2 seconds per floor
+        // console.log(`Lift moving from floor ${currentFloor} to floor ${targetFloor}`);
+
+        let translateYDistance = -((targetFloor - 1) * liftHeight);
+        // console.log({currentFloor, targetFloor});
+
+        lift.style.transition = `transform ${animationDuration}s ease-in-out`;
+        lift.style.transform = `translateY(${translateYDistance}rem)`;
+
+        // console.log({translateYDistance})
+        liftsData[0].currentFloor = targetFloor;
+
+        setTimeout(() => {
+            lift.style.transition = "";
+        }, animationDuration * 1000); // Reset transition after it completes
     }
 }
