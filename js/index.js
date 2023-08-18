@@ -45,7 +45,7 @@ simulateBtn.addEventListener("click", (e) => {
             cleanupInputs();
         })
 
-        generateFloorsAndLifts(floors.value, lifts.value)
+        generateFloorsAndLifts(floors.value, lifts.value);
     }
 })
 
@@ -80,7 +80,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
 
             const btnUp = document.createElement("button");
             btnUp.innerText = "▲"
-            // "⬆️"
             btnUp.classList.add("lift-btn")
             btnUp.addEventListener("click", () => {
                 moveLiftToFloor(floorNumber);
@@ -88,7 +87,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
 
             const btnDown = document.createElement("button");
             btnDown.innerText = "▼";
-            // ⬇️
             btnDown.classList.add("lift-btn");
             btnDown.addEventListener("click", () => {
                 moveLiftToFloor(floorNumber);
@@ -173,22 +171,23 @@ function moveLiftToFloor(targetFloor) {
             lift.style.transition = "";
             lift.classList.add("opened-door")
             leftDoor.classList.add("closed-door");
-            rightDoor.classList.add("closed-door")
+            rightDoor.classList.add("closed-door");
             openLeftDoor();
             openRightDoor();
 
             //FIX: Add transitionend event listener to the doors
-            leftDoor.addEventListener("transitionend", () => {
-                lift.classList.remove("opened-door");
-                leftDoor.classList.remove("closed-door");
-            });
+            // leftDoor.addEventListener("transitionend", () => {
+            //     lift.classList.remove("opened-door");
+            //     leftDoor.classList.remove("closed-door");
+            // });
 
-            rightDoor.addEventListener("transitionend", () => {
-                rightDoor.classList.remove("closed-door");
-            });
+            // rightDoor.addEventListener("transitionend", () => {
+            //     rightDoor.classList.remove("closed-door");
+            // });
         }, totalAnimationDuration * 1000);
 
         function openLeftDoor() {
+
             leftDoor.style.transform = `translateX(-1.25rem)`;
             leftDoor.style.transition = `transform 2.5s ease-in-out`;
             closeLeftDoor();
@@ -202,15 +201,30 @@ function moveLiftToFloor(targetFloor) {
 
         function closeLeftDoor() {
             setTimeout(() => {
-                leftDoor.style.transform = `translateX(0rem)`;
+                leftDoor.style.transform =`translateX(0)`;
                 leftDoor.style.transition = `transform 2.5s ease-in-out`;
+
+                // Add transitionend listener for closing left door
+                leftDoor.addEventListener("transitionend", () => {
+                    // Remove the opened-door class and reset the left door transition
+                    lift.classList.remove("opened-door");
+                    leftDoor.classList.remove("closed-door");
+                    leftDoor.style.transition = "";
+                });
             },2500)
         }
 
         function closeRightDoor() {
             setTimeout(() => {
-                rightDoor.style.transform = `translateX(0rem)`;
+                rightDoor.style.transform = `translateX(0)`;
                 rightDoor.style.transition = `transform 2.5s ease-in-out`;
+
+                // Add transitionend listener for closing right door
+                rightDoor.addEventListener("transitionend", () => {
+                    // Reset the right door transition
+                    rightDoor.classList.remove("closed-door");
+                    rightDoor.style.transition = "";
+                });
             },2500)
         }
 
