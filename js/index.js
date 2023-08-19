@@ -189,16 +189,17 @@ function moveLiftToFloor(targetFloor, liftNumber) {
         liftsData[liftNumber-1].state = "idle"
 
         setTimeout(() => {
-            lift.style.transition = "";
-            lift.classList.add("opened-door")
-            leftDoor.classList.add("closed-door");
-            rightDoor.classList.add("closed-door");
-            openLeftDoor();
-            openRightDoor();
+            if( liftsData[liftNumber-1].state === "idle") {
+                lift.style.transition = "";
+                lift.classList.add("opened-door")
+                leftDoor.classList.add("closed-door");
+                rightDoor.classList.add("closed-door");
+                openLeftDoor();
+                openRightDoor();
+            }
         }, totalAnimationDuration * 1000);
 
         function openLeftDoor() {
-
             leftDoor.style.transform = `translateX(-1.25rem)`;
             leftDoor.style.transition = `transform 2.5s ease-in-out`;
             closeLeftDoor();
