@@ -17,3 +17,7 @@ Create a responsive web app where you can simulate elevator functionality
     - Lift moving at 2s per floor
     - Lift stopping at every floor where it was called
     - Mobile friendly design
+
+## Live Link:
+
+Try out the simulation in action [here](https://lift-simulation-v1.netlify.app/)
