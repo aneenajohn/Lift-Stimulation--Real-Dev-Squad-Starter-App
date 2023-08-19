@@ -13,8 +13,7 @@ function cleanupInputs() {
 }
 
 simulateBtn.addEventListener("click", (e) => {
-    e.preventDefault()
-    console.log(floors.value, lifts.value)
+    e.preventDefault();
     if(!Number(floors.value) || Number(floors.value) < 1) {
         cleanupInputs();
         alert("Enter valid number of floors");
@@ -113,8 +112,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                 moveLiftToFloor(floorNumber, nearestIdleLift);
             });
 
-            
-
             const floorLabel = document.createElement("p");
             floorLabel.innerText = `Floor ${floorNumber}`;
             floorLabel.classList.add("floor-label");
@@ -144,11 +141,8 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                 }
             }
 
-            console.log({floorCount , i})
-            console.log(floorCount-1 === i)
-            
+            console.log({floorCount , i});
             floorContents.appendChild(floorLabel);
-
             floorContainer.appendChild(floorContents);
         }
         container.appendChild(floorContainer);
@@ -183,7 +177,6 @@ function moveLiftToFloor(targetFloor, liftNumber) {
     if (isInputValid && liftsData.length > 0) {
         const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
         const animationDuration = 2; // 2 seconds per floor
-        // console.log(`Lift moving from floor ${currentFloor} to floor ${targetFloor}`);
 
         const floorDistance = Math.abs(currentFloor - targetFloor);
         const totalAnimationDuration = floorDistance * animationDuration;
