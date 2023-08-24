@@ -7,6 +7,9 @@ const simulatedLifts = document.querySelector('.simulated-lifts');
 let isInputValid = false;
 let liftsData = [];
 
+// DOCS: Maintain a queue for single lift to serve multiple calls
+let requestQueue = [];
+
 function cleanupInputs() {
     floors.value = "";
     lifts.value = "";
@@ -74,6 +77,7 @@ function generateFloorsAndLifts (floorCount, liftCount) {
     generateLiftsData(liftCount);
 
     console.log("Data: ", liftsData);
+    console.log("liftCount: ", liftCount)
 
     for(let i = 0; i <= floorCount; i++) {
         const floorContainer = document.createElement("div");
@@ -100,8 +104,24 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             btnUp.innerText = "▲"
             btnUp.classList.add("lift-btn")
             btnUp.addEventListener("click", () => {
-                const nearestIdleLift = findNearestIdleLift(floorNumber);
-                moveLiftToFloor(floorNumber, nearestIdleLift);
+                console.log("btnUp addEventListener: ", liftCount, liftCount >1,liftCount === 1, typeof liftCount )
+                if(Number(liftCount) >1) {
+                    const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    moveLiftToFloor(floorNumber, nearestIdleLift);
+                }else if(Number(liftCount) === 1) {
+                    console.log("liftCount: ", liftCount === 1)
+                    let liftId = 1 // DOCS: Since we have only one lift hardcoding the liftId for the same 
+                    console.log("Chk1: ",liftsData[liftId - 1].state )
+                    if(liftsData[liftId - 1].state === "idle") {
+                        moveLiftToFloor(floorNumber, liftId)
+                    }else {
+                        if(!requestQueue.includes(floorNumber)) {
+                            requestQueue.push(floorNumber);
+                        }
+                        console.log("requestQueue after adding: ", requestQueue);
+                    }
+                }
+                
             });
 
             const btnDown = document.createElement("button");
@@ -162,6 +182,7 @@ function generateLiftsData(liftCount) {
 }
 
 function moveLiftToFloor(targetFloor, liftNumber) {
+    console.log("moveLiftToFloor: ", targetFloor);
     const lift = document.querySelector(`#lift-${liftNumber}`);
     const leftDoor = document.querySelector(`#leftDoor-${liftNumber}`);
     const rightDoor = document.querySelector(`#rightDoor-${liftNumber}`);
@@ -211,39 +232,53 @@ function moveLiftToFloor(targetFloor, liftNumber) {
             closeRightDoor();
         }
 
-        function closeLeftDoor() {
-            setTimeout(() => {
-                leftDoor.style.transform =`translateX(0)`;
-                leftDoor.style.transition = `transform 2.5s ease-in-out`;
-
-                // Add transitionend listener for closing left door
-                leftDoor.addEventListener("transitionend", () => {
-                    // Remove the opened-door class and reset the left door transition
-                    lift.classList.remove("opened-door");
-                    leftDoor.classList.remove("closed-door");
-                    leftDoor.style.transition = "";
-                    liftsData[liftNumber-1].state = "idle"
-                });
-            },2500)
-        }
-
-        function closeRightDoor() {
-            setTimeout(() => {
-                rightDoor.style.transform = `translateX(0)`;
-                rightDoor.style.transition = `transform 2.5s ease-in-out`;
-
-                // Add transitionend listener for closing right door
-                rightDoor.addEventListener("transitionend", () => {
-                    // Reset the right door transition
-                    rightDoor.classList.remove("closed-door");
-                    rightDoor.style.transition = "";
-                });
-            },2500)
-        }
-
     }
 
-    console.log("From moveLiftToFloor: ", liftsData)
+    function closeLeftDoor() {
+        setTimeout(() => {
+            leftDoor.style.transform =`translateX(0)`;
+            leftDoor.style.transition = `transform 2.5s ease-in-out`;
+
+            // Add transitionend listener for closing left door
+            leftDoor.addEventListener("transitionend", () => {
+                // Remove the opened-door class and reset the left door transition
+                lift.classList.remove("opened-door");
+
+                leftDoor.classList.remove("closed-door");
+                leftDoor.style.transition = "";
+            });
+        },2500)
+    }
+
+    function closeRightDoor() {
+        setTimeout(() => {
+            rightDoor.style.transform = `translateX(0)`;
+            rightDoor.style.transition = `transform 2.5s ease-in-out`;
+
+            // Add transitionend listener for closing right door
+            rightDoor.addEventListener("transitionend", () => {
+                // Reset the right door transition
+                rightDoor.classList.remove("closed-door");
+                rightDoor.style.transition = "";
+                liftsData[liftNumber-1].state = "idle";
+                console.log("requestQueue chk: ", requestQueue);
+                if(requestQueue.length) {
+                     setTimeout(() => {
+                        if(requestQueue[0]) {
+                            if(liftsData[liftNumber-1].state === "idle") {
+                                moveLiftToFloor(requestQueue[0], 1);
+                            }
+                            console.log("From moveLiftToFloor: ", liftsData)
+                        }
+                        requestQueue.shift();
+                        console.log("requestQueue after popping: ", requestQueue);
+                     }, 1000)
+                    ;
+                }
+                console.log("Print me once transition ends")
+            });
+        },2500)
+    }
 }
 
 
