@@ -106,7 +106,7 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     }
                 }else if(Number(liftCount) === 1) {
                     let liftId = 1 // DOCS: Since we have only one lift hardcoding the liftId for the same 
-                    if(liftsData[nearestIdleLift - 1].state === "idle" && requestQueue.length===0) {
+                    if(liftsData[liftId - 1].state === "idle" && requestQueue.length===0) {
                         moveLiftToFloor(floorNumber, liftId)
                     }else {
                         if(!requestQueue.includes(floorNumber)) {
