@@ -65,8 +65,6 @@ const findNearestIdleLift = (targetFloor) => {
             }
         }
     }
-
-    console.log({nearestLift});
     return nearestLift;
 }
 
@@ -75,9 +73,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
     container.classList.add("container");
 
     generateLiftsData(liftCount);
-
-    console.log("Data: ", liftsData);
-    console.log("liftCount: ", liftCount)
 
     for(let i = 0; i <= floorCount; i++) {
         const floorContainer = document.createElement("div");
@@ -104,32 +99,42 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             btnUp.innerText = "▲"
             btnUp.classList.add("lift-btn")
             btnUp.addEventListener("click", () => {
-                console.log("btnUp addEventListener: ", liftCount, liftCount >1,liftCount === 1, typeof liftCount )
                 if(Number(liftCount) >1) {
                     const nearestIdleLift = findNearestIdleLift(floorNumber);
-                    moveLiftToFloor(floorNumber, nearestIdleLift);
+                    if(liftsData[nearestIdleLift-1].state === "idle") {
+                        moveLiftToFloor(floorNumber, nearestIdleLift);
+                    }
                 }else if(Number(liftCount) === 1) {
-                    console.log("liftCount: ", liftCount === 1)
                     let liftId = 1 // DOCS: Since we have only one lift hardcoding the liftId for the same 
-                    console.log("Chk1: ",liftsData[liftId - 1].state )
-                    if(liftsData[liftId - 1].state === "idle") {
+                    if(liftsData[nearestIdleLift - 1].state === "idle" && requestQueue.length===0) {
                         moveLiftToFloor(floorNumber, liftId)
                     }else {
                         if(!requestQueue.includes(floorNumber)) {
                             requestQueue.push(floorNumber);
                         }
-                        console.log("requestQueue after adding: ", requestQueue);
                     }
                 }
-                
             });
 
             const btnDown = document.createElement("button");
             btnDown.innerText = "▼";
             btnDown.classList.add("lift-btn");
             btnDown.addEventListener("click", () => {
-                const nearestIdleLift = findNearestIdleLift(floorNumber);
-                moveLiftToFloor(floorNumber, nearestIdleLift);
+                if(Number(liftCount) >1) {
+                    const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    if(liftsData[nearestIdleLift-1].state === "idle") {
+                        moveLiftToFloor(floorNumber, nearestIdleLift);
+                    }
+                }else if(Number(liftCount) === 1) {
+                    let liftId = 1 // DOCS: Since we have only one lift hardcoding the liftId for the same 
+                    if(liftsData[liftId - 1].state === "idle" && requestQueue.length===0) {
+                        moveLiftToFloor(floorNumber, liftId)
+                    }else {
+                        if(!requestQueue.includes(floorNumber)) {
+                            requestQueue.push(floorNumber);
+                        }
+                    }
+                }
             });
 
             const floorLabel = document.createElement("p");
@@ -160,8 +165,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     floorContents.appendChild(lift);
                 }
             }
-
-            console.log({floorCount , i});
             floorContents.appendChild(floorLabel);
             floorContainer.appendChild(floorContents);
         }
@@ -182,7 +185,6 @@ function generateLiftsData(liftCount) {
 }
 
 function moveLiftToFloor(targetFloor, liftNumber) {
-    console.log("moveLiftToFloor: ", targetFloor);
     const lift = document.querySelector(`#lift-${liftNumber}`);
     const leftDoor = document.querySelector(`#leftDoor-${liftNumber}`);
     const rightDoor = document.querySelector(`#rightDoor-${liftNumber}`);
@@ -222,13 +224,13 @@ function moveLiftToFloor(targetFloor, liftNumber) {
 
         function openLeftDoor() {
             leftDoor.style.transform = `translateX(-1.25rem)`;
-            leftDoor.style.transition = `transform 2.5s ease-in-out`;
+            leftDoor.style.transition = `transform 2.5s ease`;
             closeLeftDoor();
         }
 
         function openRightDoor() {
             rightDoor.style.transform = `translateX(1.25rem)`;
-            rightDoor.style.transition = `transform 2.5s ease-in-out`;
+            rightDoor.style.transition = `transform 2.5s ease`;
             closeRightDoor();
         }
 
@@ -261,19 +263,16 @@ function moveLiftToFloor(targetFloor, liftNumber) {
                 rightDoor.classList.remove("closed-door");
                 rightDoor.style.transition = "";
                 liftsData[liftNumber-1].state = "idle";
-                console.log("requestQueue chk: ", requestQueue);
-                if(requestQueue.length) {
-                     setTimeout(() => {
+                if(requestQueue.length && Number(lifts.value) === 1) {
+                    setTimeout(() => {
                         if(requestQueue[0]) {
                             if(liftsData[liftNumber-1].state === "idle") {
                                 moveLiftToFloor(requestQueue[0], 1);
+                                requestQueue.shift();
                             }
                             console.log("From moveLiftToFloor: ", liftsData)
                         }
-                        requestQueue.shift();
-                        console.log("requestQueue after popping: ", requestQueue);
-                     }, 1000)
-                    ;
+                    }, 1500)
                 }
                 console.log("Print me once transition ends")
             });
@@ -282,5 +281,5 @@ function moveLiftToFloor(targetFloor, liftNumber) {
 }
 
 
-
+// ease-in-out
 
