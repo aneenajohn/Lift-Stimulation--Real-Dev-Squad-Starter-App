@@ -3,6 +3,7 @@ const floors = document.querySelector('.floor-input');
 const lifts = document.querySelector('.lift-input');
 const simulateBtn = document.querySelector('.simulate-btn');
 const simulatedLifts = document.querySelector('.simulated-lifts');
+const alert = document.createElement("p");
 
 let isInputValid = false;
 let liftsData = [];
@@ -41,6 +42,7 @@ simulateBtn.addEventListener("click", (e) => {
         const backBtn = document.querySelector(".back-btn");
         backBtn.addEventListener("click", (e) => {
             simulatedLifts.style.display = "none";
+            simulatedLifts.style.position = "relative";
             userInputPage.style.display = "block";
             liftsData = [];
             cleanupInputs();
@@ -71,6 +73,21 @@ const findNearestIdleLift = (targetFloor) => {
 
     console.log({nearestLift});
     return nearestLift;
+}
+
+function getFloorsInQueue() {
+    let floors ="";
+    for(let i = 0;i< eventQueue.length; i++) {
+        floors += eventQueue[i].floorNumber
+    }
+
+    console.log("Floors: ", floors, floors.length, )
+    if(floors.length === 1) {
+        return String(floors);
+    }else {
+        floors = String(floors).split("").join(",");
+        return floors;
+    }
 }
 
 function generateFloorsAndLifts (floorCount, liftCount) {
@@ -105,6 +122,7 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             const btnUp = document.createElement("button");
             btnUp.innerText = "▲"
             btnUp.classList.add("lift-btn")
+
             btnUp.addEventListener("click", () => {
                 console.log("isLiftFree: ", isLiftFree);
                 if (isLiftFree) {
@@ -115,6 +133,11 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                 } else {
                     eventQueue.push({ floorNumber, direction: "up" });
                     console.log("Outside isLiftFree", eventQueue)
+                    alert.classList.add("alert");
+                    alert.style.display = "block";
+                    let floorList = getFloorsInQueue()
+                    alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
+                    simulatedLifts.appendChild(alert);
                 }
             });
 
@@ -128,6 +151,12 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     isLiftFree = false;
                 } else {
                     eventQueue.push({ floorNumber, direction: "down" });
+                    console.log("Outside isLiftFree", eventQueue)
+                    alert.classList.add("alert");
+                    alert.style.display = "block";
+                    let floorList = getFloorsInQueue()
+                    alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
+                    simulatedLifts.appendChild(alert);
                 }
             });
 
@@ -246,11 +275,17 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
                             const nextEvent = eventQueue.shift();
                             if(nextEvent?.floorNumber) {
                                 const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
+                                if(eventQueue.length > 0) {
+                                    // alert.innerText = `Floor ${getFloorsInQueue()} added to queue`;
+                                    let floorList = getFloorsInQueue()
+                                    alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
+                                }
                                 moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
                             }
                         }, 2500); // Adjust the delay as needed
                     } else {
                         isLiftFree = true;
+                        alert.style.display = "none";
                     }
                     console.log("Print once transition ends")
                 });

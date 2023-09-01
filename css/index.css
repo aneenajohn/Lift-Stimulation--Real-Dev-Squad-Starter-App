@@ -156,3 +156,12 @@ body {
 .floor-label {
     color: var(--primary-text);
 }
+
+.alert {
+    position: absolute;
+    top: 2%;
+    right: 4%;
+    color: var(--bg-color);
+    background-color: var(--primary-text);
+    padding: 1rem;
+}
