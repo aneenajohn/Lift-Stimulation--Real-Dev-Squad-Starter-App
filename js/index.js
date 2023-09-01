@@ -6,6 +6,8 @@ const simulatedLifts = document.querySelector('.simulated-lifts');
 
 let isInputValid = false;
 let liftsData = [];
+let eventQueue = [];
+let isLiftFree = true;
 
 function cleanupInputs() {
     floors.value = "";
@@ -53,12 +55,16 @@ const findNearestIdleLift = (targetFloor) => {
     let nearestLift = null;
     let shortestDistance = Infinity;
 
-    for(const lift of liftsData) {
-        if(lift.state === "idle") {
-            const distance = Math.abs(targetFloor - lift.currentFloor);
-            if(distance < shortestDistance) {
-                shortestDistance = distance;
-                nearestLift = lift.liftId;
+    if(liftsData.length === 1) {
+        nearestLift = liftsData[0].liftId;
+    }else {
+        for(const lift of liftsData) {
+            if(lift.state === "idle") {
+                const distance = Math.abs(targetFloor - lift.currentFloor);
+                if(distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestLift = lift.liftId;
+                }
             }
         }
     }
@@ -100,16 +106,29 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             btnUp.innerText = "▲"
             btnUp.classList.add("lift-btn")
             btnUp.addEventListener("click", () => {
-                const nearestIdleLift = findNearestIdleLift(floorNumber);
-                moveLiftToFloor(floorNumber, nearestIdleLift);
+                console.log("isLiftFree: ", isLiftFree);
+                if (isLiftFree) {
+                    console.log("Inside isLiftFree: ", isLiftFree);
+                    const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    moveLiftToFloor(floorNumber, nearestIdleLift);
+                    isLiftFree = false;
+                } else {
+                    eventQueue.push({ floorNumber, direction: "up" });
+                    console.log("Outside isLiftFree", eventQueue)
+                }
             });
 
             const btnDown = document.createElement("button");
             btnDown.innerText = "▼";
             btnDown.classList.add("lift-btn");
             btnDown.addEventListener("click", () => {
-                const nearestIdleLift = findNearestIdleLift(floorNumber);
-                moveLiftToFloor(floorNumber, nearestIdleLift);
+                if (isLiftFree) {
+                    const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    moveLiftToFloor(floorNumber, nearestIdleLift);
+                    isLiftFree = false;
+                } else {
+                    eventQueue.push({ floorNumber, direction: "down" });
+                }
             });
 
             const floorLabel = document.createElement("p");
@@ -140,8 +159,6 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     floorContents.appendChild(lift);
                 }
             }
-
-            console.log({floorCount , i});
             floorContents.appendChild(floorLabel);
             floorContainer.appendChild(floorContents);
         }
@@ -161,7 +178,7 @@ function generateLiftsData(liftCount) {
     }
 }
 
-function moveLiftToFloor(targetFloor, liftNumber) {
+async function moveLiftToFloor(targetFloor, liftNumber) {
     const lift = document.querySelector(`#lift-${liftNumber}`);
     const leftDoor = document.querySelector(`#leftDoor-${liftNumber}`);
     const rightDoor = document.querySelector(`#rightDoor-${liftNumber}`);
@@ -175,7 +192,7 @@ function moveLiftToFloor(targetFloor, liftNumber) {
     }
 
     if (isInputValid && liftsData.length > 0) {
-        const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
+        // const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
         const animationDuration = 2; // 2 seconds per floor
 
         const floorDistance = Math.abs(currentFloor - targetFloor);
@@ -186,7 +203,6 @@ function moveLiftToFloor(targetFloor, liftNumber) {
         lift.style.transition = `transform ${totalAnimationDuration}s ease-in-out`;
         lift.style.transform = `translateY(${translateYDistance}rem)`;
         liftsData[liftNumber-1].currentFloor = targetFloor;
-        
 
         setTimeout(() => {
             // if( liftsData[liftNumber-1].state === "idle") {
@@ -223,6 +239,20 @@ function moveLiftToFloor(targetFloor, liftNumber) {
                     leftDoor.classList.remove("closed-door");
                     leftDoor.style.transition = "";
                     liftsData[liftNumber-1].state = "idle"
+
+                    // Check if there are events in the queue
+                    if (eventQueue.length > 0) {
+                        setTimeout(() => {
+                            const nextEvent = eventQueue.shift();
+                            if(nextEvent?.floorNumber) {
+                                const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
+                                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
+                            }
+                        }, 2500); // Adjust the delay as needed
+                    } else {
+                        isLiftFree = true;
+                    }
+                    console.log("Print once transition ends")
                 });
             },2500)
         }
