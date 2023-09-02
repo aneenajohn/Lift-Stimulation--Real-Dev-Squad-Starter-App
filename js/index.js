@@ -79,14 +79,14 @@ const findNearestIdleLift = (targetFloor) => {
 function getFloorsInQueue() {
     let floors ="";
     for(let i = 0;i< eventQueue.length; i++) {
-        floors += eventQueue[i].floorNumber
+        floors += `${eventQueue[i].floorNumber} `
     }
 
     console.log("Floors: ", floors, floors.length, )
     if(floors.length === 1) {
         return String(floors);
     }else {
-        floors = String(floors).split("").join(",");
+        floors = String(floors).split(" ").join(",").slice(0, -1);
         return floors;
     }
 }
@@ -136,7 +136,7 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     console.log("Outside isLiftFree", eventQueue)
                     alert.classList.add("alert");
                     alert.style.display = "block";
-                    let floorList = getFloorsInQueue()
+                    let floorList = getFloorsInQueue();
                     alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
                     simulatedLifts.appendChild(alert);
                 }
@@ -155,7 +155,7 @@ function generateFloorsAndLifts (floorCount, liftCount) {
                     console.log("Outside isLiftFree", eventQueue)
                     alert.classList.add("alert");
                     alert.style.display = "block";
-                    let floorList = getFloorsInQueue()
+                    let floorList = getFloorsInQueue();
                     alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
                     simulatedLifts.appendChild(alert);
                 }
@@ -273,6 +273,12 @@ function closeDoors(lift,leftDoor, rightDoor) {
         if (eventQueue.length > 0) {
             const nextEvent = eventQueue.shift();
             if (nextEvent?.floorNumber) {
+                let floorList = getFloorsInQueue();
+                if(floorList) {
+                    alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
+                }else {
+                    alert.style.display = "none";
+                }
                 const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
                 moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
             }
