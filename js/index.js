@@ -235,27 +235,15 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
         lift.style.transform = `translateY(${translateYDistance}rem)`;
         liftsData[liftNumber-1].currentFloor = targetFloor;
 
-        // Wait for the lift to reach the target floor
+        // DOCS: Wait for the lift to reach the target floor
         await new Promise(resolve => setTimeout(resolve, totalAnimationDuration * 1000));
 
-        // Open the doors
+        // DOCS: Open the doors
         openDoors(lift, leftDoor, rightDoor);
 
-        // Close the doors after a delay
-        await new Promise(resolve => setTimeout(resolve, 2500)); // Adjust the delay as needed
+        // DOCS: Close the doors after a delay
+        await new Promise(resolve => setTimeout(resolve, 2500));
         closeDoors(lift,leftDoor, rightDoor);
-
-        // Check if there are events in the queue
-        if (eventQueue.length > 0) {
-            const nextEvent = eventQueue.shift();
-            if (nextEvent?.floorNumber) {
-                const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
-                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
-            }
-        } else {
-            isLiftFree = true;
-            alert.style.display = "none";
-        }
     }
 
     console.log("From moveLiftToFloor: ", liftsData)
@@ -280,6 +268,18 @@ function closeDoors(lift,leftDoor, rightDoor) {
         lift.classList.remove("opened-door");
         leftDoor.classList.remove("closed-door");
         leftDoor.style.transition = "";
+
+        // Check if there are events in the queue
+        if (eventQueue.length > 0) {
+            const nextEvent = eventQueue.shift();
+            if (nextEvent?.floorNumber) {
+                const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
+                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
+            }
+        } else {
+            isLiftFree = true;
+            alert.style.display = "none";
+        }
     }, { once: true });
 
     rightDoor.addEventListener("transitionend", () => {
