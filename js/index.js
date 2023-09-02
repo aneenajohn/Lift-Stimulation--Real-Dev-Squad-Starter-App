@@ -9,6 +9,7 @@ let isInputValid = false;
 let liftsData = [];
 let eventQueue = [];
 let isLiftFree = true;
+let isTransitionInProgress = false;
 
 function cleanupInputs() {
     floors.value = "";
@@ -221,6 +222,7 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
     }
 
     if (isInputValid && liftsData.length > 0) {
+
         // const distance = Math.abs(currentFloor - targetFloor) * liftHeight;
         const animationDuration = 2; // 2 seconds per floor
 
@@ -233,84 +235,65 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
         lift.style.transform = `translateY(${translateYDistance}rem)`;
         liftsData[liftNumber-1].currentFloor = targetFloor;
 
-        setTimeout(() => {
-            // if( liftsData[liftNumber-1].state === "idle") {
-                lift.style.transition = "";
-                lift.classList.add("opened-door")
-                leftDoor.classList.add("closed-door");
-                rightDoor.classList.add("closed-door");
-                openLeftDoor();
-                openRightDoor();
-            // }
-        }, totalAnimationDuration * 1000);
+        // Wait for the lift to reach the target floor
+        await new Promise(resolve => setTimeout(resolve, totalAnimationDuration * 1000));
 
-        function openLeftDoor() {
-            leftDoor.style.transform = `translateX(-1.25rem)`;
-            leftDoor.style.transition = `transform 2.5s ease-in-out`;
-            closeLeftDoor();
+        // Open the doors
+        openDoors(lift, leftDoor, rightDoor);
+
+        // Close the doors after a delay
+        await new Promise(resolve => setTimeout(resolve, 2500)); // Adjust the delay as needed
+        closeDoors(lift,leftDoor, rightDoor);
+
+        // Check if there are events in the queue
+        if (eventQueue.length > 0) {
+            const nextEvent = eventQueue.shift();
+            if (nextEvent?.floorNumber) {
+                const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
+                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
+            }
+        } else {
+            isLiftFree = true;
+            alert.style.display = "none";
         }
-
-        function openRightDoor() {
-            rightDoor.style.transform = `translateX(1.25rem)`;
-            rightDoor.style.transition = `transform 2.5s ease-in-out`;
-            closeRightDoor();
-        }
-
-        function closeLeftDoor() {
-            setTimeout(() => {
-                leftDoor.style.transform =`translateX(0)`;
-                leftDoor.style.transition = `transform 2.5s ease-in-out`;
-
-                // Add transitionend listener for closing left door
-                leftDoor.addEventListener("transitionend", () => {
-                    // Remove the opened-door class and reset the left door transition
-                    lift.classList.remove("opened-door");
-                    leftDoor.classList.remove("closed-door");
-                    leftDoor.style.transition = "";
-                    liftsData[liftNumber-1].state = "idle"
-
-                    // Check if there are events in the queue
-                    if (eventQueue.length > 0) {
-                        setTimeout(() => {
-                            const nextEvent = eventQueue.shift();
-                            if(nextEvent?.floorNumber) {
-                                const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
-                                if(eventQueue.length > 0) {
-                                    // alert.innerText = `Floor ${getFloorsInQueue()} added to queue`;
-                                    let floorList = getFloorsInQueue()
-                                    alert.innerText = `${floorList.length !== 1 ? "Floors" : "Floor"} ${floorList} ${floorList.length !== 1 ? 'are' : 'is'} in queue`;
-                                }
-                                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
-                            }
-                        }, 2500); // Adjust the delay as needed
-                    } else {
-                        isLiftFree = true;
-                        alert.style.display = "none";
-                    }
-                    console.log("Print once transition ends")
-                });
-            },2500)
-        }
-
-        function closeRightDoor() {
-            setTimeout(() => {
-                rightDoor.style.transform = `translateX(0)`;
-                rightDoor.style.transition = `transform 2.5s ease-in-out`;
-
-                // Add transitionend listener for closing right door
-                rightDoor.addEventListener("transitionend", () => {
-                    // Reset the right door transition
-                    rightDoor.classList.remove("closed-door");
-                    rightDoor.style.transition = "";
-                });
-            },2500)
-        }
-
     }
 
     console.log("From moveLiftToFloor: ", liftsData)
 }
 
+function openDoors(lift, leftDoor, rightDoor) {
+    lift.classList.add("opened-door");
+    leftDoor.classList.add("closed-door");
+    rightDoor.classList.add("closed-door");
+    openLeftDoor(leftDoor);
+    openRightDoor(rightDoor);
+}
 
+function closeDoors(lift,leftDoor, rightDoor) {
+    leftDoor.style.transform = `translateX(0)`;
+    leftDoor.style.transition = `transform 2.5s ease-in-out`;
+    rightDoor.style.transform = `translateX(0)`;
+    rightDoor.style.transition = `transform 2.5s ease-in-out`;
 
+    // Add transitionend listener for closing doors
+    leftDoor.addEventListener("transitionend", () => {
+        lift.classList.remove("opened-door");
+        leftDoor.classList.remove("closed-door");
+        leftDoor.style.transition = "";
+    }, { once: true });
 
+    rightDoor.addEventListener("transitionend", () => {
+        rightDoor.classList.remove("closed-door");
+        rightDoor.style.transition = "";
+    }, { once: true });
+}
+
+function openLeftDoor(leftDoor) {
+    leftDoor.style.transform = `translateX(-1.25rem)`;
+    leftDoor.style.transition = `transform 2.5s ease-in-out`;
+}
+
+function openRightDoor(rightDoor) {
+    rightDoor.style.transform = `translateX(1.25rem)`;
+    rightDoor.style.transition = `transform 2.5s ease-in-out`;
+}
