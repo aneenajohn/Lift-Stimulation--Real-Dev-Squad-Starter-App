@@ -46,6 +46,8 @@ simulateBtn.addEventListener("click", (e) => {
             simulatedLifts.style.position = "relative";
             userInputPage.style.display = "block";
             liftsData = [];
+            eventQueue = [];
+            isLiftFree = true;
             cleanupInputs();
         })
 
@@ -91,6 +93,20 @@ function getFloorsInQueue() {
     }
 }
 
+function checkIfAnyLiftIsFree() {
+    for(const lift of liftsData) {
+        if(lift.state === "idle") {
+            isLiftFree = true;
+        }else {
+            isLiftFree = false
+        }
+        // return isLiftFree
+    }
+    // isLiftFree = false;
+    console.log("isLiftFree from checkIfAnyLiftIsFree",isLiftFree, liftsData);
+    return isLiftFree
+}
+
 function generateFloorsAndLifts (floorCount, liftCount) {
     const container = document.createElement("div");
     container.classList.add("container");
@@ -126,11 +142,14 @@ function generateFloorsAndLifts (floorCount, liftCount) {
 
             btnUp.addEventListener("click", () => {
                 console.log("isLiftFree: ", isLiftFree);
-                if (isLiftFree) {
+                const nearestIdleLift = findNearestIdleLift(floorNumber);
+                if (checkIfAnyLiftIsFree() && nearestIdleLift) {
                     console.log("Inside isLiftFree: ", isLiftFree);
-                    const nearestIdleLift = findNearestIdleLift(floorNumber);
-                    moveLiftToFloor(floorNumber, nearestIdleLift);
-                    isLiftFree = false;
+                    // const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    if(nearestIdleLift) {
+                        moveLiftToFloor(floorNumber, nearestIdleLift);
+                        isLiftFree = false;
+                    }
                 } else {
                     eventQueue.push({ floorNumber, direction: "up" });
                     console.log("Outside isLiftFree", eventQueue)
@@ -146,10 +165,13 @@ function generateFloorsAndLifts (floorCount, liftCount) {
             btnDown.innerText = "▼";
             btnDown.classList.add("lift-btn");
             btnDown.addEventListener("click", () => {
-                if (isLiftFree) {
-                    const nearestIdleLift = findNearestIdleLift(floorNumber);
-                    moveLiftToFloor(floorNumber, nearestIdleLift);
-                    isLiftFree = false;
+                const nearestIdleLift = findNearestIdleLift(floorNumber);
+                if (checkIfAnyLiftIsFree() && nearestIdleLift) {
+                    // const nearestIdleLift = findNearestIdleLift(floorNumber);
+                    if(nearestIdleLift) {
+                        moveLiftToFloor(floorNumber, nearestIdleLift);
+                        isLiftFree = false;
+                    }
                 } else {
                     eventQueue.push({ floorNumber, direction: "down" });
                     console.log("Outside isLiftFree", eventQueue)
@@ -214,6 +236,7 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
     const rightDoor = document.querySelector(`#rightDoor-${liftNumber}`);
     const liftHeight = 3.5; // Height of each floor container
     const currentFloor = liftsData[liftNumber-1].currentFloor;
+    console.log("Check: ", liftNumber,liftsData[liftNumber-1].currentFloor, liftsData)
 
     if(targetFloor > currentFloor) {
         liftsData[liftNumber-1].state = "up"
@@ -244,6 +267,7 @@ async function moveLiftToFloor(targetFloor, liftNumber) {
         // DOCS: Close the doors after a delay
         await new Promise(resolve => setTimeout(resolve, 2500));
         closeDoors(lift,leftDoor, rightDoor);
+        liftsData[liftNumber-1].state = "idle";
     }
 
     console.log("From moveLiftToFloor: ", liftsData)
@@ -280,7 +304,10 @@ function closeDoors(lift,leftDoor, rightDoor) {
                     alert.style.display = "none";
                 }
                 const nearestIdleLift = findNearestIdleLift(nextEvent.floorNumber);
-                moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
+                if(nearestIdleLift) {
+                    moveLiftToFloor(nextEvent.floorNumber, nearestIdleLift);
+                    isLiftFree = false;
+                }
             }
         } else {
             isLiftFree = true;
